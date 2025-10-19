@@ -1,0 +1,18 @@
+# USDA Plant Hardiness Zone Map - Python Dependencies
+
+# Core Python libraries (included in standard library)
+# - json
+# - os
+# - xml.etree.ElementTree
+# - pathlib
+# - math
+# - re
+
+# No external dependencies required for the current scripts
+# All processing scripts use only Python standard library modules
+
+# Optional: For enhanced development
+# jupyter>=1.0.0          # For data analysis notebooks
+# matplotlib>=3.0.0       # For data visualization
+# pandas>=1.0.0           # For data manipulation
+# geopandas>=0.8.0        # For advanced geospatial processing

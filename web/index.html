@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USDA Hardiness Zones Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: #2d5016;
+            color: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .header p {
+            margin: 5px 0 0 0;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 15px 30px;
+            font-size: 0.85em;
+            color: #666;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #2d5016;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar {
+            width: 300px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+        }
+
+        .sidebar h1 {
+            margin-top: 0;
+            color: #2d5016;
+            font-size: 1.5em;
+            border-bottom: 2px solid #2d5016;
+            padding-bottom: 10px;
+        }
+
+        .zone-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .zone-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .zone-item:hover {
+            background-color: #f0f8e7;
+            border-color: #4CAF50;
+        }
+
+        .zone-checkbox {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .zone-checkbox input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            accent-color: #4CAF50;
+        }
+
+        .zone-label {
+            flex-grow: 1;
+            font-weight: 500;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .hex-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75em;
+            color: #666;
+            background: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .zone-temp {
+            font-size: 0.9em;
+            color: #666;
+            margin-left: 24px;
+            margin-top: 4px;
+        }
+
+        .zone-loading {
+            font-size: 0.8em;
+            color: #007acc;
+            margin-left: 24px;
+            margin-top: 2px;
+            font-style: italic;
+        }
+
+        .zone-error {
+            font-size: 0.8em;
+            color: #d32f2f;
+            margin-left: 24px;
+            margin-top: 2px;
+            font-style: italic;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+
+        .zip-lookup {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+
+        .zip-lookup h3 {
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: #2d5016;
+            font-size: 1.1em;
+        }
+
+        .zip-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .zip-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .zip-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .zip-button:hover {
+            background: #45a049;
+        }
+
+        .zip-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .zip-result {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .zip-result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .zip-result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .zip-result.loading {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .control-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+        }
+
+        .control-button:hover {
+            background: #45a049;
+        }
+
+        .control-button.secondary {
+            background: #6c757d;
+        }
+
+        .control-button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        .legend h3 {
+            margin-top: 0;
+            color: #2d5016;
+            font-size: 1.1em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 15px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌱 USDA Plant Hardiness Zone Map</h1>
+        <p>Interactive map showing USDA plant hardiness zones across the United States</p>
+    </div>
+    
+    <div class="main-content">
+        <div class="sidebar">
+        <h1>🌱 Hardiness Zones</h1>
+        
+        <div class="zip-lookup">
+            <h3>🔍 Find Your Zone</h3>
+            <div class="zip-input-group">
+                <input type="text" id="zipInput" class="zip-input" placeholder="Enter ZIP code (e.g. 90210)" maxlength="5">
+                <button id="zipButton" class="zip-button" onclick="lookupZipCode()">Find Zone</button>
+            </div>
+            <div id="zipResult" class="zip-result"></div>
+        </div>
+
+        <div class="controls">
+            <button class="control-button" onclick="showAllZones()">Show All</button>
+            <button class="control-button secondary" onclick="hideAllZones()">Hide All</button>
+        </div>
+
+        <ul class="zone-list" id="zoneList">
+            <!-- Zone checkboxes will be populated here -->
+        </ul>
+
+        <div class="legend">
+            <h3>Temperature Color Scale</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(to right, #0D47A1, #1976D2);"></div>
+                <span>Zone 3: -40 to -30°F (Coldest)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(to right, #2196F3, #64B5F6);"></div>
+                <span>Zone 4-5: -30 to -10°F</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(to right, #81C784, #4CAF50);"></div>
+                <span>Zone 6-7: -10 to 10°F</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(to right, #CDDC39, #FFC107);"></div>
+                <span>Zone 8-9: 10 to 30°F</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(to right, #FF9800, #D32F2F);"></div>
+                <span>Zone 10-12: 30 to 60°F (Warmest)</span>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.8em; color: #666;">
+                🔵 Blue = Coldest zones | 🔴 Red = Warmest zones
+            </div>
+        </div>
+    </div>
+
+        <div class="map-container">
+            <div id="loading" class="loading">
+                Loading map and zone data...
+            </div>
+            <div id="map"></div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <strong>Data Source:</strong> <a href="https://prism.oregonstate.edu/phzm/" target="_blank">PRISM Climate Group, Oregon State University</a> | 
+        <strong>Acknowledgment:</strong> PRISM Group, Oregon State University, <a href="https://prism.oregonstate.edu" target="_blank">https://prism.oregonstate.edu</a>, data created 4 Feb 2023
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Zone data with cold-to-hot color scheme (blue to red)
+        const zoneData = [
+            { zone: '3a', title: '3a: -40 to -35°F', color: '#0D47A1' }, // Dark Blue (coldest)
+            { zone: '3b', title: '3b: -35 to -30°F', color: '#1565C0' }, // Blue
+            { zone: '4a', title: '4a: -30 to -25°F', color: '#1976D2' }, // Medium Blue
+            { zone: '4b', title: '4b: -25 to -20°F', color: '#1E88E5' }, // Light Blue
+            { zone: '5a', title: '5a: -20 to -15°F', color: '#2196F3' }, // Blue
+            { zone: '5b', title: '5b: -15 to -10°F', color: '#42A5F5' }, // Light Blue
+            { zone: '6a', title: '6a: -10 to -5°F', color: '#64B5F6' }, // Sky Blue
+            { zone: '6b', title: '6b: -5 to 0°F', color: '#81C784' }, // Light Green
+            { zone: '7a', title: '7a: 0 to 5°F', color: '#66BB6A' }, // Green
+            { zone: '7b', title: '7b: 5 to 10°F', color: '#4CAF50' }, // Medium Green
+            { zone: '8a', title: '8a: 10 to 15°F', color: '#8BC34A' }, // Light Green
+            { zone: '8b', title: '8b: 15 to 20°F', color: '#CDDC39' }, // Lime
+            { zone: '9a', title: '9a: 20 to 25°F', color: '#FFEB3B' }, // Yellow
+            { zone: '9b', title: '9b: 25 to 30°F', color: '#FFC107' }, // Amber
+            { zone: '10a', title: '10a: 30 to 35°F', color: '#FF9800' }, // Orange
+            { zone: '10b', title: '10b: 35 to 40°F', color: '#FF7043' }, // Deep Orange
+            { zone: '11a', title: '11a: 40 to 45°F', color: '#F44336' }, // Red
+            { zone: '11b', title: '11b: 45 to 50°F', color: '#E53935' }, // Dark Red
+            { zone: '12a', title: '12a: 50 to 60°F', color: '#D32F2F' }  // Dark Red (warmest)
+        ];
+
+        // Initialize map
+        const map = L.map('map').setView([39.8283, -98.5795], 4); // Center on USA
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Store zone layers
+        const zoneLayers = {};
+        
+        // Initialize UI
+        function initializeUI() {
+            const zoneList = document.getElementById('zoneList');
+            
+            zoneData.forEach(zone => {
+                const li = document.createElement('li');
+                li.className = 'zone-item';
+                
+                li.innerHTML = `
+                    <label class="zone-checkbox">
+                        <input type="checkbox" id="zone-${zone.zone}" onchange="toggleZone('${zone.zone}')">
+                        <span class="zone-label">
+                            <span class="color-swatch" style="background-color: ${zone.color};"></span>
+                            <span>Zone ${zone.zone.toUpperCase()}</span>
+                            <span class="hex-code">${zone.color}</span>
+                        </span>
+                    </label>
+                    <div class="zone-temp">${zone.title}</div>
+                    <div id="zone-status-${zone.zone}" class="zone-loading" style="display: none;"></div>
+                `;
+                
+                zoneList.appendChild(li);
+            });
+            
+            // Hide loading indicator
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Load GeoJSON for a zone
+        async function loadZoneGeoJSON(zone) {
+            const statusElement = document.getElementById(`zone-status-${zone}`);
+            
+            try {
+                statusElement.style.display = 'block';
+                statusElement.textContent = 'Loading...';
+                statusElement.className = 'zone-loading';
+                
+                console.log(`Starting to load zone ${zone}`);
+                const response = await fetch(`../data/geojson/balanced/zone_${zone}.geojson`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: Failed to load zone ${zone}`);
+                }
+                
+                console.log(`Downloaded zone ${zone}, parsing JSON...`);
+                const geojson = await response.json();
+                
+                console.log(`Successfully loaded zone ${zone} with ${geojson.features.length} features`);
+                statusElement.style.display = 'none';
+                
+                return geojson;
+            } catch (error) {
+                console.error(`Error loading zone ${zone}:`, error);
+                statusElement.textContent = `Error: ${error.message}`;
+                statusElement.className = 'zone-error';
+                return null;
+            }
+        }
+
+        // Toggle zone visibility
+        async function toggleZone(zone) {
+            const checkbox = document.getElementById(`zone-${zone}`);
+            const statusElement = document.getElementById(`zone-status-${zone}`);
+            
+            if (checkbox.checked) {
+                // Show zone
+                if (!zoneLayers[zone]) {
+                    console.log(`Loading zone ${zone}...`);
+                    const geojson = await loadZoneGeoJSON(zone);
+                    if (geojson) {
+                        console.log(`Creating map layer for zone ${zone}...`);
+                        
+                        statusElement.style.display = 'block';
+                        statusElement.textContent = 'Adding to map...';
+                        statusElement.className = 'zone-loading';
+                        
+                        const zoneInfo = zoneData.find(z => z.zone === zone);
+                        
+                        try {
+                            zoneLayers[zone] = L.geoJSON(geojson, {
+                                style: {
+                                    fillColor: zoneInfo.color,
+                                    weight: 2,
+                                    opacity: 1,
+                                    color: '#333',
+                                    fillOpacity: 0.7
+                                },
+                                onEachFeature: function(feature, layer) {
+                                    layer.bindPopup(`
+                                        <strong>Zone ${feature.properties.zone.toUpperCase()}</strong><br>
+                                        ${feature.properties.title}<br>
+                                        Temperature Range: ${feature.properties.temperature_range}°F
+                                    `);
+                                }
+                            }).addTo(map);
+                            
+                            console.log(`Zone ${zone} successfully added to map`);
+                            statusElement.style.display = 'none';
+                        } catch (error) {
+                            console.error(`Error adding zone ${zone} to map:`, error);
+                            statusElement.textContent = `Error adding to map: ${error.message}`;
+                            statusElement.className = 'zone-error';
+                            checkbox.checked = false;
+                        }
+                    } else {
+                        checkbox.checked = false;
+                    }
+                } else {
+                    map.addLayer(zoneLayers[zone]);
+                }
+            } else {
+                // Hide zone
+                if (zoneLayers[zone]) {
+                    map.removeLayer(zoneLayers[zone]);
+                }
+                statusElement.style.display = 'none';
+            }
+        }
+
+        // Show all zones
+        function showAllZones() {
+            zoneData.forEach(zone => {
+                const checkbox = document.getElementById(`zone-${zone.zone}`);
+                if (!checkbox.checked) {
+                    checkbox.checked = true;
+                    toggleZone(zone.zone);
+                }
+            });
+        }
+
+        // Hide all zones
+        function hideAllZones() {
+            zoneData.forEach(zone => {
+                const checkbox = document.getElementById(`zone-${zone.zone}`);
+                if (checkbox.checked) {
+                    checkbox.checked = false;
+                    toggleZone(zone.zone);
+                }
+            });
+        }
+
+        // Zip code lookup functionality
+        let zipMarker = null;
+        
+        async function lookupZipCode() {
+            const zipInput = document.getElementById('zipInput');
+            const zipButton = document.getElementById('zipButton');
+            const zipResult = document.getElementById('zipResult');
+            
+            const zipCode = zipInput.value.trim();
+            
+            if (!zipCode || !/^\d{5}$/.test(zipCode)) {
+                showZipResult('Please enter a valid 5-digit ZIP code', 'error');
+                return;
+            }
+            
+            zipButton.disabled = true;
+            showZipResult('Looking up ZIP code...', 'loading');
+            
+            try {
+                // Use Nominatim (OpenStreetMap) geocoding service
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&postalcode=${zipCode}&limit=1`);
+                
+                if (!response.ok) {
+                    throw new Error('Geocoding service unavailable');
+                }
+                
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    showZipResult('ZIP code not found. Please check and try again.', 'error');
+                    return;
+                }
+                
+                const lat = parseFloat(data[0].lat);
+                const lon = parseFloat(data[0].lon);
+                const displayName = data[0].display_name;
+                
+                // Find which zone this point falls in
+                const zone = await findZoneForPoint(lat, lon);
+                
+                if (zone) {
+                    const zoneInfo = zoneData.find(z => z.zone === zone);
+                    showZipResult(`📍 ${zipCode} is in <strong>Zone ${zone.toUpperCase()}</strong><br>${zoneInfo.title}<br><small>${displayName.split(',').slice(0, 3).join(', ')}</small>`, 'success');
+                    
+                    // Add marker to map
+                    if (zipMarker) {
+                        map.removeLayer(zipMarker);
+                    }
+                    
+                    zipMarker = L.marker([lat, lon])
+                        .addTo(map)
+                        .bindPopup(`<strong>ZIP ${zipCode}</strong><br>Zone ${zone.toUpperCase()}<br>${zoneInfo.title}`)
+                        .openPopup();
+                    
+                    // Center map on location
+                    map.setView([lat, lon], 10);
+                    
+                    // Auto-select and show the zone
+                    const checkbox = document.getElementById(`zone-${zone}`);
+                    if (checkbox && !checkbox.checked) {
+                        checkbox.checked = true;
+                        await toggleZone(zone);
+                    }
+                } else {
+                    showZipResult(`📍 ${zipCode} located, but zone could not be determined. The location might be outside the continental US.`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Zip lookup error:', error);
+                showZipResult('Error looking up ZIP code. Please try again.', 'error');
+            } finally {
+                zipButton.disabled = false;
+            }
+        }
+        
+        function showZipResult(message, type) {
+            const zipResult = document.getElementById('zipResult');
+            zipResult.innerHTML = message;
+            zipResult.className = `zip-result ${type}`;
+            zipResult.style.display = 'block';
+        }
+        
+        async function findZoneForPoint(lat, lon) {
+            // Check each loaded zone to see if the point falls within it
+            for (const zoneInfo of zoneData) {
+                if (zoneLayers[zoneInfo.zone]) {
+                    const layer = zoneLayers[zoneInfo.zone];
+                    let pointInZone = false;
+                    
+                    layer.eachLayer(function(sublayer) {
+                        if (sublayer.feature && sublayer.feature.geometry) {
+                            if (isPointInPolygon([lon, lat], sublayer.feature.geometry)) {
+                                pointInZone = true;
+                            }
+                        }
+                    });
+                    
+                    if (pointInZone) {
+                        return zoneInfo.zone;
+                    }
+                }
+            }
+            
+            // If no loaded zones contain the point, try to load and check all zones
+            for (const zoneInfo of zoneData) {
+                if (!zoneLayers[zoneInfo.zone]) {
+                    try {
+                        const geojson = await loadZoneGeoJSON(zoneInfo.zone);
+                        if (geojson) {
+                            for (const feature of geojson.features) {
+                                if (isPointInPolygon([lon, lat], feature.geometry)) {
+                                    return zoneInfo.zone;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error loading zone ${zoneInfo.zone}:`, error);
+                    }
+                }
+            }
+            
+            return null;
+        }
+        
+        function isPointInPolygon(point, geometry) {
+            if (geometry.type === 'Polygon') {
+                return pointInPolygon(point, geometry.coordinates[0]);
+            } else if (geometry.type === 'MultiPolygon') {
+                for (const polygon of geometry.coordinates) {
+                    if (pointInPolygon(point, polygon[0])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        function pointInPolygon(point, polygon) {
+            const [x, y] = point;
+            let inside = false;
+            
+            for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+                const [xi, yi] = polygon[i];
+                const [xj, yj] = polygon[j];
+                
+                if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+                    inside = !inside;
+                }
+            }
+            
+            return inside;
+        }
+        
+        // Allow Enter key in zip input
+        document.addEventListener('DOMContentLoaded', function() {
+            const zipInput = document.getElementById('zipInput');
+            if (zipInput) {
+                zipInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        lookupZipCode();
+                    }
+                });
+                
+                // Only allow numbers
+                zipInput.addEventListener('input', function(e) {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                });
+            }
+        });
+        
+        // Initialize the application
+        initializeUI();
+    </script>
+</body>
+</html>
