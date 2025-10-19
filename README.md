@@ -1,15 +1,15 @@
-# USDA Plant Hardiness Zone Map
+# USDA Plant Hardiness Zone GeoJSON Generator
 
-An interactive web application for visualizing USDA Plant Hardiness Zones across the United States. This project provides gardeners, farmers, and agricultural professionals with an easy-to-use tool to find their hardiness zone and understand temperature ranges for plant selection.
+A comprehensive data processing pipeline that transforms raw USDA Plant Hardiness Zone data into optimized GeoJSON files suitable for web applications. This project provides standardized, web-ready GeoJSON files for all 19 hardiness zones (3a-12a) with multiple optimization levels.
 
-## Features
+## Key Features
 
-- **Interactive Map**: Visualize hardiness zones on a Leaflet.js map
-- **ZIP Code Lookup**: Find your hardiness zone by entering a ZIP code
-- **Zone Toggle**: Show/hide specific zones on the map
-- **Color-coded Visualization**: Temperature-based color scheme from blue (coldest) to red (warmest)
-- **Multiple Data Formats**: Optimized GeoJSON files for different performance needs
-- **Responsive Design**: Works on desktop and mobile devices
+- **Standardized GeoJSON Output**: Clean, web-ready GeoJSON files for all hardiness zones
+- **Multiple Optimization Levels**: Original, balanced, simplified, and ultra-compressed versions
+- **Douglas-Peucker Algorithm**: Advanced geometry simplification while preserving accuracy
+- **Complete Data Pipeline**: From raw KML to production-ready GeoJSON files
+- **Interactive Web Demo**: Live demonstration of the processed data
+- **Open Source**: Full processing scripts and documentation included
 
 ## Quick Start
 
@@ -79,29 +79,34 @@ victory_map/
 └── .dockerignore               # Docker ignore file
 ```
 
-## Data Processing
+## Data Processing Pipeline
 
-The project includes several Python scripts for processing the original USDA KML data:
+This project transforms a 233MB KML file from PRISM Climate Group into optimized GeoJSON files. The complete pipeline includes:
 
-### Scripts Overview
+### Source Data
+- **Original**: [PRISM Climate Group, Oregon State University](https://prism.oregonstate.edu/phzm/)
+- **File**: `phzm_us_zones_kml_2023.kml` (233MB)
+- **Zones**: 19 hardiness zones (3a-12a) covering the continental United States
 
-- **`convert_kml_to_geojson.py`**: Converts the original KML file to individual GeoJSON files
-- **`convert_kml_with_colors.py`**: Extracts and preserves KML styling information
-- **`simplify_geojson.py`**: Standard geometry simplification for reduced file sizes
-- **`balanced_simplify_geojson.py`**: Balanced approach maintaining good coverage
-- **`ultra_simplify_geojson.py`**: Aggressive simplification for minimal file sizes
+### Processing Scripts
 
-### Running the Scripts
+- **`convert_kml_to_geojson.py`**: KML → GeoJSON conversion with zone separation
+- **`convert_kml_with_colors.py`**: Extract and preserve original KML styling
+- **`simplify_geojson.py`**: Standard Douglas-Peucker simplification
+- **`balanced_simplify_geojson.py`**: Balanced approach (recommended for web use)
+- **`ultra_simplify_geojson.py`**: Aggressive simplification for mobile/bandwidth-limited apps
+
+### Running the Pipeline
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Convert KML to GeoJSON
+# Convert KML to individual GeoJSON files
 python scripts/convert_kml_to_geojson.py
 
-# Simplify the data
+# Create balanced version (recommended)
 python scripts/balanced_simplify_geojson.py
+
+# Create ultra-compressed version
+python scripts/ultra_simplify_geojson.py
 ```
 
 ## Hardiness Zones
@@ -136,13 +141,15 @@ The map displays USDA Plant Hardiness Zones from 3a to 12a:
 - **Original KML**: USDA Plant Hardiness Zone Map 2023
 - **Geocoding**: OpenStreetMap Nominatim service for ZIP code lookup
 
-## Technical Details
+## Technical Specifications
 
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Mapping**: Leaflet.js 1.9.4
-- **Data Format**: GeoJSON
+- **Input Format**: KML (Keyhole Markup Language)
+- **Output Format**: GeoJSON FeatureCollection
 - **Coordinate System**: WGS84 (EPSG:4326)
-- **Simplification**: Douglas-Peucker algorithm
+- **Simplification Algorithm**: Douglas-Peucker line simplification
+- **Precision**: 4 decimal places (~11m accuracy)
+- **Tolerance**: 0.002 degrees (~200m) for balanced version
+- **Processing**: Python 3.x with standard library only
 
 ## Performance Optimization
 

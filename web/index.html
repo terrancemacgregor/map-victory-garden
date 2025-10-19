@@ -41,6 +41,87 @@
             overflow: hidden;
         }
 
+        .tab-container {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #2d5016;
+        }
+
+        .tab-button.active {
+            color: #2d5016;
+            border-bottom-color: #2d5016;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .details-content {
+            padding: 30px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .details-content h2 {
+            color: #2d5016;
+            margin-top: 0;
+            border-bottom: 2px solid #2d5016;
+            padding-bottom: 10px;
+        }
+
+        .details-content h3 {
+            color: #2d5016;
+            margin-top: 25px;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        .data-source {
+            background: #e8f5e8;
+            border-left: 4px solid #2d5016;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .algorithm-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
         .footer {
             background: #f8f9fa;
             border-top: 1px solid #dee2e6;
@@ -324,8 +405,14 @@
         <p>Interactive map showing USDA plant hardiness zones across the United States</p>
     </div>
     
+    <div class="tab-container">
+        <button class="tab-button active" onclick="showTab('map')">🗺️ Map</button>
+        <button class="tab-button" onclick="showTab('details')">📋 Details</button>
+    </div>
+    
     <div class="main-content">
-        <div class="sidebar">
+        <div id="map-tab" class="tab-content active">
+            <div class="sidebar">
         <h1>🌱 Hardiness Zones</h1>
         
         <div class="zip-lookup">
@@ -374,11 +461,135 @@
         </div>
     </div>
 
-        <div class="map-container">
-            <div id="loading" class="loading">
-                Loading map and zone data...
+            <div class="map-container">
+                <div id="loading" class="loading">
+                    Loading map and zone data...
+                </div>
+                <div id="map"></div>
             </div>
-            <div id="map"></div>
+        </div>
+
+        <div id="details-tab" class="tab-content">
+            <div class="details-content">
+                <h2>📊 Data Processing Pipeline</h2>
+                
+                <p>This project transforms raw USDA Plant Hardiness Zone data into optimized GeoJSON files suitable for web applications. Here's how we did it:</p>
+
+                <div class="data-source">
+                    <h3>🗂️ Source Data</h3>
+                    <p><strong>Original Data:</strong> <a href="https://prism.oregonstate.edu/phzm/" target="_blank">PRISM Climate Group, Oregon State University</a></p>
+                    <p><strong>File:</strong> <code>phzm_us_zones_kml_2023.kml</code> (233MB KML file)</p>
+                    <p><strong>Data Created:</strong> February 4, 2023</p>
+                </div>
+
+                <h3>🔄 Processing Steps</h3>
+                
+                <h4>1. KML to GeoJSON Conversion</h4>
+                <p>We converted the original KML file into individual GeoJSON files for each hardiness zone:</p>
+                <div class="code-block">
+# Convert KML to GeoJSON
+python scripts/convert_kml_to_geojson.py
+                </div>
+                <p><strong>Result:</strong> 19 individual zone files (3a-12a) in <code>data/geojson/original/</code></p>
+
+                <h4>2. Geometry Simplification</h4>
+                <p>To make the data web-friendly, we applied the <strong>Douglas-Peucker algorithm</strong> to reduce file sizes while maintaining accuracy:</p>
+                
+                <div class="algorithm-info">
+                    <h4>🧮 Douglas-Peucker Algorithm</h4>
+                    <p>This algorithm removes redundant coordinate points while preserving the essential shape of polygons. It's widely used in GIS applications for data optimization.</p>
+                    <p><strong>How it works:</strong></p>
+                    <ul>
+                        <li>Finds the point with maximum distance from a line segment</li>
+                        <li>If distance exceeds tolerance, recursively simplifies both sides</li>
+                        <li>Otherwise, removes intermediate points</li>
+                    </ul>
+                </div>
+
+                <h4>3. Multiple Optimization Levels</h4>
+                <p>We created different versions for various use cases:</p>
+                
+                <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                    <tr style="background: #f8f9fa;">
+                        <th style="border: 1px solid #dee2e6; padding: 10px; text-align: left;">Version</th>
+                        <th style="border: 1px solid #dee2e6; padding: 10px; text-align: left;">Total Size</th>
+                        <th style="border: 1px solid #dee2e6; padding: 10px; text-align: left;">Avg File Size</th>
+                        <th style="border: 1px solid #dee2e6; padding: 10px; text-align: left;">Use Case</th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;"><strong>Original</strong></td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~233MB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~12MB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">Full detail analysis</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;"><strong>Balanced</strong></td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~15MB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~800KB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">Web applications (recommended)</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;"><strong>Simplified</strong></td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~8MB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~400KB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">Standard web use</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;"><strong>Ultra</strong></td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~2MB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">~100KB</td>
+                        <td style="border: 1px solid #dee2e6; padding: 10px;">Mobile/limited bandwidth</td>
+                    </tr>
+                </table>
+
+                <h3>🛠️ Processing Scripts</h3>
+                <p>All processing is done with Python scripts using only standard library modules:</p>
+                
+                <div class="code-block">
+# Available processing scripts:
+scripts/convert_kml_to_geojson.py      # KML → GeoJSON conversion
+scripts/convert_kml_with_colors.py     # Extract KML styling
+scripts/simplify_geojson.py            # Standard simplification
+scripts/balanced_simplify_geojson.py   # Balanced approach (recommended)
+scripts/ultra_simplify_geojson.py      # Aggressive simplification
+                </div>
+
+                <h3>📁 Output Structure</h3>
+                <div class="code-block">
+data/
+├── source/                    # Original KML file
+│   └── phzm_us_zones_kml_2023.kml
+└── geojson/                   # Processed GeoJSON files
+    ├── original/              # First conversion
+    ├── balanced/              # Balanced simplification (used in this app)
+    ├── simplified/            # Standard simplification
+    ├── ultra/                 # Ultra-aggressive
+    └── with_colors/          # With original KML colors
+                </div>
+
+                <h3>🎯 Technical Specifications</h3>
+                <ul>
+                    <li><strong>Coordinate System:</strong> WGS84 (EPSG:4326)</li>
+                    <li><strong>Precision:</strong> 4 decimal places (~11m accuracy)</li>
+                    <li><strong>Tolerance:</strong> 0.002 degrees (~200m)</li>
+                    <li><strong>Algorithm:</strong> Douglas-Peucker line simplification</li>
+                    <li><strong>Format:</strong> GeoJSON FeatureCollection</li>
+                </ul>
+
+                <h3>🔗 Data Sources & Acknowledgments</h3>
+                <div class="data-source">
+                    <p><strong>Primary Data Source:</strong> <a href="https://prism.oregonstate.edu/phzm/" target="_blank">PRISM Climate Group, Oregon State University</a></p>
+                    <p><strong>Base Map:</strong> <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></p>
+                    <p><strong>Geocoding:</strong> <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap Nominatim</a></p>
+                </div>
+
+                <h3>📖 Documentation</h3>
+                <p>For detailed information about the data processing pipeline, see:</p>
+                <ul>
+                    <li><a href="../docs/data-processing.md" target="_blank">Data Processing Guide</a></li>
+                    <li><a href="https://github.com/yourusername/victory_map" target="_blank">Project Repository</a></li>
+                </ul>
+            </div>
         </div>
     </div>
     
@@ -734,6 +945,30 @@
             }
         });
         
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName + '-tab');
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
         // Initialize the application
         initializeUI();
     </script>
