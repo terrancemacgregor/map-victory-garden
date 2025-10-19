@@ -1,0 +1,26 @@
+{
+  "name": "victory_map",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "lsof -ti:33332 | xargs kill -9 2>/dev/null || true & next dev -p 33332",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.0.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.8",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.0",
+    "typescript": "^5"
+  }
+}

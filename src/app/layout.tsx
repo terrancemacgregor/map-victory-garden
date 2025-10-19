@@ -7,6 +7,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'USDA Plant Hardiness Zone Map',
   description: 'Interactive map showing USDA plant hardiness zones across the United States',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/favicon.png',
+  },
 }
 
 export default function RootLayout({

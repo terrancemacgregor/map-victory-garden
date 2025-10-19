@@ -20,6 +20,12 @@ export default function TabNavigation({ activeTab, onTabChange }: TabNavigationP
       >
         Details
       </button>
+      <button
+        className={`tab-button ${activeTab === 'github' ? 'active' : ''}`}
+        onClick={() => onTabChange('github')}
+      >
+        GitHub
+      </button>
     </div>
   );
 }

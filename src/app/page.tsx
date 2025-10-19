@@ -74,8 +74,33 @@ export default function Home() {
             <DetailsTab />
           </div>
         )}
+
+        {activeTab === 'github' && (
+          <div className="tab-content active" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+            <h2>Open Source Project</h2>
+            <p>This project is open source and available on GitHub. We welcome contributions, bug reports, and feature requests!</p>
+            <div style={{ marginTop: '2rem' }}>
+              <a
+                href="https://github.com/terrancemacgregor/map-victory-garden"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  padding: '12px 24px',
+                  backgroundColor: '#2d5016',
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px',
+                  fontWeight: 'bold'
+                }}
+              >
+                View on GitHub →
+              </a>
+            </div>
+          </div>
+        )}
       </div>
-      
+
       <Footer />
     </>
   );
