@@ -401,22 +401,22 @@
 </head>
 <body>
     <div class="header">
-        <h1>🌱 USDA Plant Hardiness Zone Map</h1>
+        <h1>USDA Plant Hardiness Zone Map</h1>
         <p>Interactive map showing USDA plant hardiness zones across the United States</p>
     </div>
     
     <div class="tab-container">
-        <button class="tab-button active" onclick="showTab('map')">🗺️ Map</button>
-        <button class="tab-button" onclick="showTab('details')">📋 Details</button>
+        <button class="tab-button active" onclick="showTab('map')">Map</button>
+        <button class="tab-button" onclick="showTab('details')">Details</button>
     </div>
     
     <div class="main-content">
         <div id="map-tab" class="tab-content active">
             <div class="sidebar">
-        <h1>🌱 Hardiness Zones</h1>
+        <h1>Hardiness Zones</h1>
         
         <div class="zip-lookup">
-            <h3>🔍 Find Your Zone</h3>
+            <h3>Find Your Zone</h3>
             <div class="zip-input-group">
                 <input type="text" id="zipInput" class="zip-input" placeholder="Enter ZIP code (e.g. 90210)" maxlength="5">
                 <button id="zipButton" class="zip-button" onclick="lookupZipCode()">Find Zone</button>
@@ -456,7 +456,7 @@
                 <span>Zone 10-12: 30 to 60°F (Warmest)</span>
             </div>
             <div style="margin-top: 10px; font-size: 0.8em; color: #666;">
-                🔵 Blue = Coldest zones | 🔴 Red = Warmest zones
+                Blue = Coldest zones | Red = Warmest zones
             </div>
         </div>
     </div>
@@ -471,18 +471,18 @@
 
         <div id="details-tab" class="tab-content">
             <div class="details-content">
-                <h2>📊 Data Processing Pipeline</h2>
+                <h2>Data Processing Pipeline</h2>
                 
                 <p>This project transforms raw USDA Plant Hardiness Zone data into optimized GeoJSON files suitable for web applications. Here's how we did it:</p>
 
                 <div class="data-source">
-                    <h3>🗂️ Source Data</h3>
+                    <h3>Source Data</h3>
                     <p><strong>Original Data:</strong> <a href="https://prism.oregonstate.edu/phzm/" target="_blank">PRISM Climate Group, Oregon State University</a></p>
                     <p><strong>File:</strong> <code>phzm_us_zones_kml_2023.kml</code> (233MB KML file)</p>
                     <p><strong>Data Created:</strong> February 4, 2023</p>
                 </div>
 
-                <h3>🔄 Processing Steps</h3>
+                <h3>Processing Steps</h3>
                 
                 <h4>1. KML to GeoJSON Conversion</h4>
                 <p>We converted the original KML file into individual GeoJSON files for each hardiness zone:</p>
@@ -496,7 +496,7 @@ python scripts/convert_kml_to_geojson.py
                 <p>To make the data web-friendly, we applied the <strong>Douglas-Peucker algorithm</strong> to reduce file sizes while maintaining accuracy:</p>
                 
                 <div class="algorithm-info">
-                    <h4>🧮 Douglas-Peucker Algorithm</h4>
+                    <h4>Douglas-Peucker Algorithm</h4>
                     <p>This algorithm removes redundant coordinate points while preserving the essential shape of polygons. It's widely used in GIS applications for data optimization.</p>
                     <p><strong>How it works:</strong></p>
                     <ul>
@@ -542,7 +542,7 @@ python scripts/convert_kml_to_geojson.py
                     </tr>
                 </table>
 
-                <h3>🛠️ Processing Scripts</h3>
+                <h3>Processing Scripts</h3>
                 <p>All processing is done with Python scripts using only standard library modules:</p>
                 
                 <div class="code-block">
@@ -554,7 +554,7 @@ scripts/balanced_simplify_geojson.py   # Balanced approach (recommended)
 scripts/ultra_simplify_geojson.py      # Aggressive simplification
                 </div>
 
-                <h3>📁 Output Structure</h3>
+                <h3>Output Structure</h3>
                 <div class="code-block">
 data/
 ├── source/                    # Original KML file
@@ -567,7 +567,7 @@ data/
     └── with_colors/          # With original KML colors
                 </div>
 
-                <h3>🎯 Technical Specifications</h3>
+                <h3>Technical Specifications</h3>
                 <ul>
                     <li><strong>Coordinate System:</strong> WGS84 (EPSG:4326)</li>
                     <li><strong>Precision:</strong> 4 decimal places (~11m accuracy)</li>
@@ -576,14 +576,14 @@ data/
                     <li><strong>Format:</strong> GeoJSON FeatureCollection</li>
                 </ul>
 
-                <h3>🔗 Data Sources & Acknowledgments</h3>
+                <h3>Data Sources & Acknowledgments</h3>
                 <div class="data-source">
                     <p><strong>Primary Data Source:</strong> <a href="https://prism.oregonstate.edu/phzm/" target="_blank">PRISM Climate Group, Oregon State University</a></p>
                     <p><strong>Base Map:</strong> <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap contributors</a></p>
                     <p><strong>Geocoding:</strong> <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap Nominatim</a></p>
                 </div>
 
-                <h3>📖 Documentation</h3>
+                <h3>Documentation</h3>
                 <p>For detailed information about the data processing pipeline, see:</p>
                 <ul>
                     <li><a href="../docs/data-processing.md" target="_blank">Data Processing Guide</a></li>
@@ -817,7 +817,7 @@ data/
                 
                 if (zone) {
                     const zoneInfo = zoneData.find(z => z.zone === zone);
-                    showZipResult(`📍 ${zipCode} is in <strong>Zone ${zone.toUpperCase()}</strong><br>${zoneInfo.title}<br><small>${displayName.split(',').slice(0, 3).join(', ')}</small>`, 'success');
+                    showZipResult(`${zipCode} is in <strong>Zone ${zone.toUpperCase()}</strong><br>${zoneInfo.title}<br><small>${displayName.split(',').slice(0, 3).join(', ')}</small>`, 'success');
                     
                     // Add marker to map
                     if (zipMarker) {
@@ -839,7 +839,7 @@ data/
                         await toggleZone(zone);
                     }
                 } else {
-                    showZipResult(`📍 ${zipCode} located, but zone could not be determined. The location might be outside the continental US.`, 'error');
+                    showZipResult(`${zipCode} located, but zone could not be determined. The location might be outside the continental US.`, 'error');
                 }
                 
             } catch (error) {
