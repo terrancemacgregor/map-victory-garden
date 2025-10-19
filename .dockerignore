@@ -1,0 +1,37 @@
+# Docker ignore file for USDA Plant Hardiness Zone Map
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+LICENSE
+docs/
+
+# Python scripts (not needed in web container)
+scripts/
+requirements.txt
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Development files
+.claude/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp

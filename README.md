@@ -13,9 +13,37 @@ An interactive web application for visualizing USDA Plant Hardiness Zones across
 
 ## Quick Start
 
+### Option 1: Docker (Recommended)
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# The application will be available at:
+# http://localhost:3333
+```
+
+### Option 2: Direct File Access
 1. **View the Map**: Open `web/index.html` in your web browser
 2. **Find Your Zone**: Enter your ZIP code in the sidebar
 3. **Explore Zones**: Toggle different zones on/off to see their boundaries
+
+### Docker Commands
+```bash
+# Start the application
+docker-compose up
+
+# Start in background
+docker-compose up -d
+
+# Stop the application
+docker-compose down
+
+# Rebuild and start
+docker-compose up --build
+
+# View logs
+docker-compose logs -f
+```
 
 ## Project Structure
 
@@ -42,10 +70,13 @@ victory_map/
 │   └── samples/                 # Sample/test files
 ├── web/                         # Web application files
 │   └── index.html               # Main HTML file
-└── docs/                        # Documentation
-    ├── api.md                   # API documentation
-    ├── data-processing.md       # Data processing guide
-    └── deployment.md           # Deployment instructions
+├── docs/                        # Documentation
+│   ├── api.md                   # API documentation
+│   ├── data-processing.md       # Data processing guide
+│   └── deployment.md           # Deployment instructions
+├── Dockerfile                   # Docker configuration
+├── docker-compose.yml          # Docker Compose setup
+└── .dockerignore               # Docker ignore file
 ```
 
 ## Data Processing
